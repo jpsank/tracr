@@ -307,7 +307,7 @@ def detect_pattern(sop: rasp.SOp, pattern: Sequence[rasp.Value]) -> rasp.SOp:
   return pattern_detected.named(f"detect_pattern({pattern})")
 
 
-def make_apwm(sop: rasp.SOp) -> rasp.SOp:
+def make_apwm() -> rasp.SOp:
   """Make the auditory parametric working memory task.
   Input is a raw audio waveform.
   Step 1: Detect stimuli sequences a and b in the input, separated by silence.
@@ -322,7 +322,7 @@ def make_apwm(sop: rasp.SOp) -> rasp.SOp:
   
   # Get tone B (-0.85 - -0.45s) starting from the end
   # This requires us to reverse the input sequence
-  reversed_sop = make_reverse(sop)
+  reversed_sop = make_reverse(rasp.tokens)
   tone_b = reversed_sop > 0.45 * sample_rate & reversed_sop < 0.85 * sample_rate
 
   # Compute root mean square
