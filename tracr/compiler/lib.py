@@ -326,8 +326,9 @@ def make_apwm() -> rasp.SOp:
   tone_b = reversed_sop > 0.45 * sample_rate & reversed_sop < 0.85 * sample_rate
 
   # Compute root mean square
-  rms_a = rasp.Aggregate(tone_a, rasp.tokens**2, default=0)**0.5
-  rms_b = rasp.Aggregate(tone_b, rasp.tokens**2, default=0)**0.5
+  squared = rasp.tokens * rasp.tokens
+  rms_a = rasp.Aggregate(tone_a, squared, default=0)**0.5
+  rms_b = rasp.Aggregate(tone_b, squared, default=0)**0.5
 
   # Compare loudness
   return rms_a > rms_b
