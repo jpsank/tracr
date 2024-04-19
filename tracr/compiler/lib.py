@@ -322,7 +322,7 @@ def make_apwm() -> rasp.SOp:
   
   # Get tone B (-0.85 - -0.45s) starting from the end
   # This requires us to reverse the input sequence
-  reversed_sop = make_reverse(rasp.tokens)
+  reversed_sop = make_reverse(rasp.indices)
   tone_b = reversed_sop > 0.45 * sample_rate & reversed_sop < 0.85 * sample_rate
 
   # Compute root mean square
