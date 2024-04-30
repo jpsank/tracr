@@ -317,22 +317,27 @@ def make_apwm() -> rasp.SOp:
   """
 
   # Get tone A (0.25 - 0.65s)
-  sample_rate = 44100
-  tone_a = rasp.indices > 0.25 * sample_rate & rasp.indices < 0.65 * sample_rate
+  sample_rate = 44100  # hard-coded for now
+  tone_a_selector = rasp.Select(rasp.indices, rasp.indices, lambda x: 0.25 * sample_rate < x < 0.65 * sample_rate)
   
   # Get tone B (-0.85 - -0.45s) starting from the end
   # This requires us to reverse the input sequence
   reversed_sop = make_reverse(rasp.indices)
-  tone_b = reversed_sop > 0.45 * sample_rate & reversed_sop < 0.85 * sample_rate
+  tone_b_selector = rasp.Select(reversed_sop, reversed_sop, lambda x: 0.45 * sample_rate < x < 0.85 * sample_rate)
 
-  # Compute root mean square
-  squared = rasp.tokens * rasp.tokens
-  rms_a = rasp.Aggregate(tone_a, squared, default=0)**0.5
-  rms_b = rasp.Aggregate(tone_b, squared, default=0)**0.5
+  # Compute root mean square for each tone
+  tone_a_sum = rasp.Aggregate(tone_a_selector, rasp.tokens * rasp.tokens, default=0)
+  tone_b_sum = rasp.Aggregate(tone_b_selector, rasp.tokens * rasp.tokens, default=0)
 
-  # Compare loudness
-  return rms_a > rms_b
-  
+  tone_a_rms = (tone_a_sum / (0.65 - 0.25)) ** 0.5
+  tone_b_rms = (tone_b_sum / (0.85 - 0.45)) ** 0.5
+  tone_a_rms.named("tone_a_rms")
+  tone_b_rms.named("tone_b_rms")
+
+  # Compare the decibel of the stimuli
+  return rasp.numerical(tone_a_rms > tone_b_rms).named("apwm")
+
+
 
 def make_count_less_freq(n: int) -> rasp.SOp:
   """Returns how many tokens appear fewer than n times in the input.
