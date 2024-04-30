@@ -329,13 +329,8 @@ def make_apwm() -> rasp.SOp:
   tone_a_sum = rasp.Aggregate(tone_a_selector, rasp.tokens * rasp.tokens, default=0)
   tone_b_sum = rasp.Aggregate(tone_b_selector, rasp.tokens * rasp.tokens, default=0)
 
-  tone_a_rms = rasp.numerical(tone_a_sum / (0.65 - 0.25)) ** 0.5
-  tone_b_rms = rasp.numerical(tone_b_sum / (0.85 - 0.45)) ** 0.5
-  tone_a_rms.named("tone_a_rms")
-  tone_b_rms.named("tone_b_rms")
-
   # Compare the decibel of the stimuli
-  return rasp.numerical(tone_a_rms > tone_b_rms).named("apwm")
+  return rasp.numerical(tone_a_sum > tone_b_sum).named("apwm")
 
 
 
