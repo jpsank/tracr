@@ -307,34 +307,6 @@ def detect_pattern(sop: rasp.SOp, pattern: Sequence[rasp.Value]) -> rasp.SOp:
   return pattern_detected.named(f"detect_pattern({pattern})")
 
 
-def make_apwm() -> rasp.SOp:
-  """Make the auditory parametric working memory task.
-  Input is a raw audio waveform.
-  Step 1: Detect stimuli sequences a and b in the input, separated by silence.
-  Step 2: Calculate the decibel of the stimuli.
-  Step 3: Compare the decibel of the stimuli.
-  Returns 1 if the first tone is louder than the second tone, 0 otherwise.
-  """
-
-  # Get tone A (0.25 - 0.65s)
-  sample_rate = 44100  # hard-coded for now
-  tone_a_selector = rasp.Select(rasp.indices, rasp.indices, lambda x: 0.25 * sample_rate < x < 0.65 * sample_rate)
-  
-  # Get tone B (-0.85 - -0.45s) starting from the end
-  # This requires us to reverse the input sequence
-  reversed_sop = make_reverse(rasp.indices)
-  tone_b_selector = rasp.Select(reversed_sop, reversed_sop, lambda x: 0.45 * sample_rate < x < 0.85 * sample_rate)
-
-  # Compute root mean square for each tone
-  squared = rasp.numerical(rasp.tokens * rasp.tokens)
-  tone_a_sum = rasp.Aggregate(tone_a_selector, squared, default=0)
-  tone_b_sum = rasp.Aggregate(tone_b_selector, squared, default=0)
-
-  # Compare the decibel of the stimuli
-  return rasp.numerical(tone_a_sum > tone_b_sum).named("apwm")
-
-
-
 def make_count_less_freq(n: int) -> rasp.SOp:
   """Returns how many tokens appear fewer than n times in the input.
 
